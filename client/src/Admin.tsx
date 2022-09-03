@@ -7,15 +7,14 @@ import {
   Container,
   Button,
   Card,
-  CardMedia,
   Box,
 } from "@mui/material";
 import ThumbUpIcon from "@mui/icons-material/ThumbUpOffAltOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDownOffAltOutlined";
+import SignIn from "./SignIn";
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import "./App.css";
-import SignIn from "./SignIn";
 import { useNavigate } from "react-router-dom";
 
 interface BlogPost {
@@ -40,14 +39,13 @@ interface FetchSettings {
   body?: string;
 }
 
-const Main: React.FC = (): React.ReactElement => {
+const Admin: React.FC = (): React.ReactElement => {
   const [apiData, setApiData] = useState<ApiData>({
     blogPosts: [],
     error: "",
     fetched: false,
   });
   const [openSignIn, setOpenSignIn] = useState<boolean>(false);
-  const [openRegistration, setOpenRegistration] = useState<boolean>(false);
   const [username, setUsername] = useState<string>(
     String(localStorage.getItem("username"))
   );
@@ -58,7 +56,7 @@ const Main: React.FC = (): React.ReactElement => {
 
   const fetchPosts = async (settings: FetchSettings): Promise<void> => {
     try {
-      const connection = await fetch(`/api/blog-posts`, settings);
+      const connection = await fetch(`/api/admin`, settings);
 
       if (connection.status === 200) {
         const blogPosts = await connection.json();
@@ -111,29 +109,19 @@ const Main: React.FC = (): React.ReactElement => {
   ): Promise<void> => {
     let settings: FetchSettings = {
       method: method || "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
     };
-    if (likedislike) {
-      try {
-        await fetch(`/api/blog-posts/${likedislike}/${id}`, settings);
-        settings = {
-          method: "GET",
-        };
-        fetchPosts(settings);
-      } catch (e: any) {
-        setApiData({
-          ...apiData,
-          error: "Palvelimeen ei saada yhteyttä",
-          fetched: true,
-        });
-      }
-    } else {
-      settings = {
-        method: "GET",
-      };
-      fetchPosts(settings);
-    }
-  };
 
+    settings = {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    };
+    fetchPosts(settings);
+  };
   const handleOpenSignIn = () => {
     if (openSignIn === false) {
       setOpenSignIn(true);
@@ -146,8 +134,8 @@ const Main: React.FC = (): React.ReactElement => {
   const handleSignOut = async () => {
     setToken("");
     localStorage.setItem("token", "");
+    navigate("/");
   };
-
   useEffect(() => {
     apiCall();
   }, []);
@@ -173,7 +161,7 @@ const Main: React.FC = (): React.ReactElement => {
             justifyContent: "flex-end",
           }}
         >
-          <Button onClick={() => navigate("/admin")}>Hallintapaneeli</Button>
+          <Button onClick={() => navigate("/")}>Etusivu</Button>
           <Button onClick={() => handleSignOut()}>Kirjaudu ulos</Button>{" "}
           <Typography variant="h5">{username}</Typography>
         </Box>
@@ -188,7 +176,6 @@ const Main: React.FC = (): React.ReactElement => {
           <Button onClick={() => handleOpenSignIn()}>Kirjaudu</Button>
         </Box>
       )}
-
       <Stack>
         {Boolean(apiData.error) ? (
           <Alert severity="error">{apiData.error}</Alert>
@@ -213,24 +200,16 @@ const Main: React.FC = (): React.ReactElement => {
                           )})`
                         : null}
                     </Typography>
-                    {blogPosts?.imgUrl ? (
-                      <CardMedia
-                        component="img"
-                        image={blogPosts?.imgUrl}
-                        alt={`img ${idx}`}
-                      ></CardMedia>
-                    ) : null}
-                    <Typography key={idx} variant="body1">
-                      {<span>{blogPosts.content}</span>}
-                    </Typography>{" "}
                     <Button
                       onClick={() => apiCall("PUT", "like", blogPosts.id)}
+                      disabled
                     >
                       <ThumbUpIcon fontSize="small" />
                       {` Hyvin sanottu (${blogPosts.liked})`}
                     </Button>
                     <Button
                       onClick={() => apiCall("PUT", "dislike", blogPosts.id)}
+                      disabled
                     >
                       <ThumbDownIcon fontSize="small" />
                       {` En ole samaa mieltä (${blogPosts.disliked})`}
@@ -246,4 +225,4 @@ const Main: React.FC = (): React.ReactElement => {
   );
 };
 
-export default Main;
+export default Admin;
