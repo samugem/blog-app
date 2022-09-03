@@ -5,7 +5,6 @@ import apiBlogPostsRouter from "./routes/apiBlogPosts";
 import jwt from "jsonwebtoken";
 import apiAuthRouter from "./routes/apiAuth";
 import apiAdminRouter from "./routes/apiAdmin";
-import apiRegistrationRouter from "./routes/apiRegistration";
 
 const app: express.Application = express();
 const port: number = Number(process.env.PORT);
@@ -28,7 +27,6 @@ app.use(express.static(path.resolve(__dirname, "public")));
 
 app.use("/api/blog-posts", apiBlogPostsRouter);
 app.use("/api/auth", apiAuthRouter);
-app.use("/api/registration", apiRegistrationRouter);
 app.use("/api/admin", checkToken, apiAdminRouter);
 
 app.use(errorHandler);
