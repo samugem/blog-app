@@ -9,7 +9,13 @@ import {
   Box,
   TextField,
   Alert,
+  InputAdornment,
+  IconButton,
+  OutlinedInput,
+  InputLabel,
 } from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -22,7 +28,7 @@ const SignIn = ({
 }: any) => {
   const [errorMsg, setErrorMsg] = useState("");
   const formRef = useRef<HTMLFormElement>();
-  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignIn = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -57,6 +63,15 @@ const SignIn = ({
       }
     }
   };
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleMouseDownPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+  };
 
   return (
     <Dialog onClose={() => handleClose()} open={openSignIn}>
@@ -66,7 +81,26 @@ const SignIn = ({
             <Stack spacing={2}>
               <Typography textAlign="center">Kirjaudu</Typography>
               <TextField id="username" label="Tunnus" required />
-              <TextField id="password" label="Salasana" required />
+              <InputLabel htmlFor="filled-adornment-password">
+                Salasana
+              </InputLabel>
+              <OutlinedInput
+                id="password"
+                type={showPassword ? "text" : "password"}
+                required
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
               {errorMsg ? <Alert severity="error">{errorMsg}</Alert> : null}
             </Stack>
             <CardActions>
