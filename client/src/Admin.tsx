@@ -226,11 +226,15 @@ const Admin: React.FC = (): React.ReactElement => {
                 </ListItem>
               );
             })}
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={() => navigate("/editor")}
+            >
+              Luo uusi
+            </Button>
           </List>
         ) : null}
-        <Button variant="contained" onClick={() => navigate("/editor")}>
-          Luo uusi
-        </Button>
       </Stack>
     </Container>
   );

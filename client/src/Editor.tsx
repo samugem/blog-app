@@ -13,6 +13,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import ThumbUpIcon from "@mui/icons-material/ThumbUpOffAltOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDownOffAltOutlined";
@@ -21,6 +24,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import "./App.css";
 import { useNavigate } from "react-router-dom";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import { Height } from "@mui/icons-material";
 
 interface BlogPost {
   id: number;
@@ -58,7 +64,26 @@ const Admin: React.FC = (): React.ReactElement => {
   const [token, setToken] = useState<string>(
     String(localStorage.getItem("token"))
   );
+  const [content, setContent] = useState<string>("");
   const navigate = useNavigate();
+  const modules = {
+    toolbar: [
+      [{ "header": "1" }, { "header": "2" }, { "font": [] }],
+      [{ size: [] }],
+      ["bold", "italic", "underline", "strike", "blockquote"],
+      [
+        { "list": "ordered" },
+        { "list": "bullet" },
+        { "indent": "-1" },
+        { "indent": "+1" },
+      ],
+      ["link", "image", "video"],
+      ["clean"],
+    ],
+    clipboard: {
+      matchVisual: false,
+    },
+  };
 
   const fetchPosts = async (settings: FetchSettings): Promise<void> => {
     try {
@@ -187,7 +212,7 @@ const Admin: React.FC = (): React.ReactElement => {
             justifyContent: "flex-end",
           }}
         >
-          <Button onClick={() => navigate("/")}>Etusivu</Button>
+          <Button onClick={() => navigate("/admin")}>Takaisin</Button>
           <Button onClick={() => handleSignOut()}>Kirjaudu ulos</Button>{" "}
           <Typography variant="h5">{username}</Typography>
         </Box>
@@ -204,9 +229,18 @@ const Admin: React.FC = (): React.ReactElement => {
       )}
       <Box component="form" onSubmit={addNewComment} ref={formRef}>
         <Stack spacing={1}>
-          <TextField id="content" multiline rows={2} required></TextField>
+          <TextField id="content" label="Otsikko" required multiline rows={1} />
+          <ReactQuill value={content} onChange={setContent} modules={modules} />
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Checkbox sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }} />
+              }
+              label="Julkaise"
+            />
+          </FormGroup>
           <Button type="submit" variant="contained" sx={{ mt: 1 }}>
-            Tallenna kirjoitus
+            Tallenna
           </Button>
         </Stack>
       </Box>
