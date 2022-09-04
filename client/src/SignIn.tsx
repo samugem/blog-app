@@ -13,6 +13,7 @@ import {
   IconButton,
   OutlinedInput,
   InputLabel,
+  FormControl,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -81,26 +82,29 @@ const SignIn = ({
             <Stack spacing={2}>
               <Typography textAlign="center">Kirjaudu</Typography>
               <TextField id="username" label="Tunnus" required />
-              <InputLabel htmlFor="filled-adornment-password">
-                Salasana
-              </InputLabel>
-              <OutlinedInput
-                id="password"
-                type={showPassword ? "text" : "password"}
-                required
-                endAdornment={
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={handleClickShowPassword}
-                      onMouseDown={handleMouseDownPassword}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                }
-              />
+              <FormControl>
+                <InputLabel htmlFor="password" required>
+                  Salasana
+                </InputLabel>
+                <OutlinedInput
+                  id="password"
+                  label="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowPassword}
+                        onMouseDown={handleMouseDownPassword}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  }
+                />
+              </FormControl>
               {errorMsg ? <Alert severity="error">{errorMsg}</Alert> : null}
             </Stack>
             <CardActions>
