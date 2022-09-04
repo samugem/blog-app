@@ -18,7 +18,6 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 
 const SignIn = ({
   handleClose,

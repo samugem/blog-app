@@ -17,16 +17,11 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
-import ThumbUpIcon from "@mui/icons-material/ThumbUpOffAltOutlined";
-import ThumbDownIcon from "@mui/icons-material/ThumbDownOffAltOutlined";
-import SignIn from "./SignIn";
 import React, { useState, useEffect, useRef } from "react";
-import { format } from "date-fns";
 import "./App.css";
 import { useNavigate } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { Height } from "@mui/icons-material";
 
 interface BlogPost {
   id: number;
@@ -50,21 +45,23 @@ interface FetchSettings {
   body?: string;
 }
 
-const Admin: React.FC = (): React.ReactElement => {
+const Editor = ({ selectedBlogPost }: any): React.ReactElement => {
   const [apiData, setApiData] = useState<ApiData>({
     blogPosts: [],
     error: "",
     fetched: false,
   });
-  const [openSignIn, setOpenSignIn] = useState<boolean>(false);
   const formRef = useRef<HTMLFormElement>();
-  const [username, setUsername] = useState<string>(
-    String(localStorage.getItem("username"))
-  );
   const [token, setToken] = useState<string>(
     String(localStorage.getItem("token"))
   );
-  const [content, setContent] = useState<string>("");
+  const [header, setHeader] = useState<string>(selectedBlogPost.header || "");
+  const [published, setPublished] = useState<boolean>(
+    selectedBlogPost.published || false
+  );
+  const [content, setContent] = useState<string>(
+    selectedBlogPost.content || ""
+  );
   const navigate = useNavigate();
   const modules = {
     toolbar: [
@@ -85,167 +82,103 @@ const Admin: React.FC = (): React.ReactElement => {
     },
   };
 
-  const fetchPosts = async (settings: FetchSettings): Promise<void> => {
-    try {
-      const connection = await fetch(`/api/admin`, settings);
-
-      if (connection.status === 200) {
-        const blogPosts = await connection.json();
-
-        if (blogPosts.length < 1) {
-          setApiData({
-            ...apiData,
-            error: "Ei blogi postauksia",
-            fetched: true,
-          });
-        } else {
-          setApiData({
-            ...apiData,
-            blogPosts: blogPosts,
-            error: "",
-            fetched: true,
-          });
-        }
-      } else {
-        let errorMsg: string = "";
-
-        switch (connection.status) {
-          case 401:
-            errorMsg = "Virheellinen token";
-            break;
-          default:
-            errorMsg = "Palvelimella tapahtui odottamaton virhe";
-            break;
-        }
-
-        setApiData({
-          ...apiData,
-          error: errorMsg,
-          fetched: true,
-        });
-      }
-    } catch (e: any) {
-      setApiData({
-        ...apiData,
-        error: "Palvelimeen ei saada yhteyttä",
-        fetched: true,
-      });
-    }
-  };
-  const addNewComment = async (e: React.FormEvent): Promise<void> => {
+  const addNewBlogPost = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     if (formRef.current?.content.value) {
-      const connection = await fetch("/api/comments", {
+      const connection = await fetch("/api/blogpost", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
+          user: formRef.current?.content.value,
           header: formRef.current?.content.value,
           content: formRef.current?.content.value,
         }),
       });
 
       if (connection.status === 200) {
-        apiCall();
+        navigate("/admin");
       }
     }
   };
 
-  const apiCall = async (
-    method?: string,
-    likedislike?: string,
-    id?: number
-  ): Promise<void> => {
-    let settings: FetchSettings = {
-      method: method || "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
-    };
-
-    settings = {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
-    };
-    fetchPosts(settings);
-  };
-  const handleOpenSignIn = () => {
-    if (openSignIn === false) {
-      setOpenSignIn(true);
-    }
-  };
-  const handleCloseSignIn = () => {
-    setOpenSignIn(false);
+  const handleDelete = () => {
+    console.log(`${selectedBlogPost.id} poistettu`);
   };
 
-  const handleSignOut = async () => {
-    setToken("");
-    localStorage.setItem("token", "");
-    navigate("/");
+  const handlePublished = () => {
+    setPublished(!published);
   };
+
   useEffect(() => {
-    apiCall();
-  }, []);
+    console.log(selectedBlogPost);
+  }, [selectedBlogPost]);
 
   return (
-    <Container>
-      <Typography variant="h4" textAlign="center">
-        Blogi
-      </Typography>
-      <SignIn
-        openSignIn={openSignIn}
-        handleClose={handleCloseSignIn}
-        setToken={setToken}
-        setUsername={setUsername}
-        setOpenSignIn={setOpenSignIn}
-      />
-
+    <Container sx={{ height: "100vh" }}>
       {token ? (
-        <Box
-          sx={{
-            padding: 1,
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <Button onClick={() => navigate("/admin")}>Takaisin</Button>
-          <Button onClick={() => handleSignOut()}>Kirjaudu ulos</Button>{" "}
-          <Typography variant="h5">{username}</Typography>
-        </Box>
+        <>
+          <Box component="form" onSubmit={addNewBlogPost} ref={formRef}>
+            <Stack spacing={1}>
+              <TextField
+                id="content"
+                label="Otsikko"
+                required
+                value={header}
+                onChange={(newValue) => setHeader(newValue.target.value)}
+                rows={1}
+              />
+              <ReactQuill
+                value={content}
+                onChange={setContent}
+                modules={modules}
+              />
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  height: "100%",
+                }}
+              >
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={published}
+                        onChange={handlePublished}
+                        sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
+                      />
+                    }
+                    label="Julkaise"
+                  />
+                </FormGroup>
+                <Button
+                  type="submit"
+                  color="error"
+                  variant="contained"
+                  sx={{ mt: 1 }}
+                  onClick={handleDelete}
+                >
+                  Poista
+                </Button>
+              </Box>
+              <Button type="submit" variant="contained" sx={{ mt: 1 }}>
+                Tallenna
+              </Button>
+            </Stack>
+          </Box>
+        </>
       ) : (
-        <Box
-          sx={{
-            padding: 1,
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <Button onClick={() => handleOpenSignIn()}>Kirjaudu</Button>
+        <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+          <Button fullWidth variant="outlined" onClick={() => navigate("/")}>
+            Etusivulle
+          </Button>
         </Box>
       )}
-      <Box component="form" onSubmit={addNewComment} ref={formRef}>
-        <Stack spacing={1}>
-          <TextField id="content" label="Otsikko" required multiline rows={1} />
-          <ReactQuill value={content} onChange={setContent} modules={modules} />
-          <FormGroup>
-            <FormControlLabel
-              control={
-                <Checkbox sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }} />
-              }
-              label="Julkaise"
-            />
-          </FormGroup>
-          <Button type="submit" variant="contained" sx={{ mt: 1 }}>
-            Tallenna
-          </Button>
-        </Stack>
-      </Box>
     </Container>
   );
 };
 
-export default Admin;
+export default Editor;

@@ -12,6 +12,7 @@ import {
 import ThumbUpIcon from "@mui/icons-material/ThumbUpOffAltOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDownOffAltOutlined";
 import SignIn from "./SignIn";
+import Editor from "./Editor";
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import "./App.css";
@@ -45,7 +46,10 @@ const Admin: React.FC = (): React.ReactElement => {
     error: "",
     fetched: false,
   });
+
   const [openSignIn, setOpenSignIn] = useState<boolean>(false);
+  const [openEditor, setOpenEditor] = useState<boolean>(false);
+  const [selectedBlogPost, setSelectedBlogPost] = useState<BlogPost>();
   const [username, setUsername] = useState<string>(
     String(localStorage.getItem("username"))
   );
@@ -130,6 +134,10 @@ const Admin: React.FC = (): React.ReactElement => {
   const handleCloseSignIn = () => {
     setOpenSignIn(false);
   };
+  const handleOpenEditor = (blogPost: BlogPost) => {
+    setSelectedBlogPost(blogPost);
+    setOpenEditor(true);
+  };
 
   const handleSignOut = async () => {
     setToken("");
@@ -161,7 +169,11 @@ const Admin: React.FC = (): React.ReactElement => {
             justifyContent: "flex-end",
           }}
         >
-          <Button onClick={() => navigate("/")}>Etusivu</Button>
+          {openEditor ? (
+            <Button onClick={() => setOpenEditor(false)}>Takaisin</Button>
+          ) : (
+            <Button onClick={() => navigate("/")}>Etusivu</Button>
+          )}
           <Button onClick={() => handleSignOut()}>Kirjaudu ulos</Button>{" "}
           <Typography variant="h5">{username}</Typography>
         </Box>
@@ -176,66 +188,75 @@ const Admin: React.FC = (): React.ReactElement => {
           <Button onClick={() => handleOpenSignIn()}>Kirjaudu</Button>
         </Box>
       )}
-      <Stack>
-        {Boolean(apiData.error) ? (
-          <Alert severity="error">{apiData.error}</Alert>
-        ) : apiData.fetched ? (
-          <List>
-            {apiData.blogPosts.map((blogPosts: BlogPost, idx: number) => {
-              return (
-                <ListItem key={idx} onClick={() => navigate("/editor")}>
-                  <Card sx={{ width: "100%", padding: 5, mb: 2 }}>
-                    <Typography variant="h4" sx={{ mb: 2, fontWeight: "600" }}>
-                      {blogPosts.header}
-                    </Typography>
-                    <Typography variant="subtitle2">
-                      {format(
-                        new Date(blogPosts.timestamp),
-                        "dd.MM.yyyy' 'HH:mm"
-                      )}
-                      {blogPosts.updatedAt
-                        ? `  (Muokattu ${format(
-                            new Date(blogPosts.updatedAt),
-                            "dd.MM.yyyy' 'HH:mm"
-                          )})`
-                        : null}
-                    </Typography>
-                    <Button
-                      onClick={() => apiCall("PUT", "like", blogPosts.id)}
-                      disabled
-                    >
-                      <ThumbUpIcon fontSize="small" />
-                      {` Hyvin sanottu (${blogPosts.liked})`}
-                    </Button>
-                    <Button
-                      onClick={() => apiCall("PUT", "dislike", blogPosts.id)}
-                      disabled
-                    >
-                      <ThumbDownIcon fontSize="small" />
-                      {` En ole samaa mieltä (${blogPosts.disliked})`}
-                    </Button>
-                    <Stack>
-                      <Button
-                        variant="outlined"
-                        onClick={() => navigate("/editor")}
+      {openEditor ? (
+        <Editor selectedBlogPost={selectedBlogPost} username={username} />
+      ) : (
+        <Stack>
+          {Boolean(apiData.error) ? (
+            <Alert severity="error">{apiData.error}</Alert>
+          ) : apiData.fetched ? (
+            <List>
+              {apiData.blogPosts.map((blogPost: BlogPost, idx: number) => {
+                return (
+                  <ListItem key={idx}>
+                    <Card sx={{ width: "100%", padding: 5, mb: 2 }}>
+                      <Typography
+                        variant="h4"
+                        sx={{ mb: 2, fontWeight: "600" }}
                       >
-                        Muokkaa
+                        {blogPost.header}
+                      </Typography>
+                      <Typography variant="subtitle2">
+                        {format(
+                          new Date(blogPost.timestamp),
+                          "dd.MM.yyyy' 'HH:mm"
+                        )}
+                        {blogPost.updatedAt
+                          ? `  (Muokattu ${format(
+                              new Date(blogPost.updatedAt),
+                              "dd.MM.yyyy' 'HH:mm"
+                            )})`
+                          : null}
+                      </Typography>
+                      <Button
+                        onClick={() => apiCall("PUT", "like", blogPost.id)}
+                        disabled
+                      >
+                        <ThumbUpIcon fontSize="small" />
+                        {` Hyvin sanottu (${blogPost.liked})`}
                       </Button>
-                    </Stack>
-                  </Card>
-                </ListItem>
-              );
-            })}
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={() => navigate("/editor")}
-            >
-              Luo uusi
-            </Button>
-          </List>
-        ) : null}
-      </Stack>
+                      <Button
+                        onClick={() => apiCall("PUT", "dislike", blogPost.id)}
+                        disabled
+                      >
+                        <ThumbDownIcon fontSize="small" />
+                        {` En ole samaa mieltä (${blogPost.disliked})`}
+                      </Button>
+                      <Stack>
+                        {blogPost.id ? (
+                          <Button
+                            variant="outlined"
+                            onClick={() => handleOpenEditor(blogPost)}
+                          >
+                            Muokkaa
+                          </Button>
+                        ) : null}
+                      </Stack>
+                    </Card>
+                  </ListItem>
+                );
+              })}
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => setOpenEditor(true)}
+              >
+                Luo uusi
+              </Button>
+            </List>
+          ) : null}
+        </Stack>
+      )}
     </Container>
   );
 };
