@@ -183,7 +183,7 @@ const Admin: React.FC = (): React.ReactElement => {
           <List>
             {apiData.blogPosts.map((blogPosts: BlogPost, idx: number) => {
               return (
-                <ListItem key={idx}>
+                <ListItem key={idx} onClick={() => navigate("/editor")}>
                   <Card sx={{ width: "100%", padding: 5, mb: 2 }}>
                     <Typography variant="h4" sx={{ mb: 2, fontWeight: "600" }}>
                       {blogPosts.header}
@@ -214,12 +214,23 @@ const Admin: React.FC = (): React.ReactElement => {
                       <ThumbDownIcon fontSize="small" />
                       {` En ole samaa mieltä (${blogPosts.disliked})`}
                     </Button>
+                    <Stack>
+                      <Button
+                        variant="outlined"
+                        onClick={() => navigate("/editor")}
+                      >
+                        Muokkaa
+                      </Button>
+                    </Stack>
                   </Card>
                 </ListItem>
               );
             })}
           </List>
         ) : null}
+        <Button variant="contained" onClick={() => navigate("/editor")}>
+          Luo uusi
+        </Button>
       </Stack>
     </Container>
   );
