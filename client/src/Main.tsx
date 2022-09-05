@@ -195,6 +195,14 @@ const Main: React.FC = (): React.ReactElement => {
         ) : apiData.fetched ? (
           <List>
             {apiData.blogPosts.map((blogPosts: BlogPost, idx: number) => {
+              const timestamp = format(
+                new Date(blogPosts.timestamp),
+                "dd.MM.yyyy' 'HH:mm"
+              );
+              const updatedAt = format(
+                new Date(blogPosts.updatedAt),
+                "dd.MM.yyyy' 'HH:mm"
+              );
               return (
                 <ListItem key={idx}>
                   <Card sx={{ width: "100%", padding: 5, mb: 2 }}>
@@ -202,15 +210,9 @@ const Main: React.FC = (): React.ReactElement => {
                       {blogPosts.header}
                     </Typography>
                     <Typography variant="subtitle2">
-                      {format(
-                        new Date(blogPosts.timestamp),
-                        "dd.MM.yyyy' 'HH:mm"
-                      )}
-                      {blogPosts.updatedAt
-                        ? `  (Muokattu ${format(
-                            new Date(blogPosts.updatedAt),
-                            "dd.MM.yyyy' 'HH:mm"
-                          )})`
+                      {timestamp}
+                      {timestamp !== updatedAt
+                        ? `  (Muokattu ${updatedAt})`
                         : null}
                     </Typography>
                     {blogPosts?.imgUrl ? (
@@ -221,7 +223,11 @@ const Main: React.FC = (): React.ReactElement => {
                       ></CardMedia>
                     ) : null}
                     <Typography key={idx} variant="body1">
-                      {<span>{blogPosts.content}</span>}
+                      <span
+                        dangerouslySetInnerHTML={{
+                          __html: blogPosts.content,
+                        }}
+                      ></span>
                     </Typography>{" "}
                     <Button
                       onClick={() => apiCall("PUT", "like", blogPosts.id)}

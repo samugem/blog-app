@@ -13,13 +13,14 @@ import ThumbUpIcon from "@mui/icons-material/ThumbUpOffAltOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDownOffAltOutlined";
 import SignIn from "./SignIn";
 import Editor from "./Editor";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { format } from "date-fns";
 import "./App.css";
 import { useNavigate } from "react-router-dom";
 
 interface BlogPost {
   id: number;
+  authorId: number;
   header: string;
   content: string;
   imgUrl: string;
@@ -53,14 +54,18 @@ const Admin: React.FC = (): React.ReactElement => {
   const [username, setUsername] = useState<string>(
     String(localStorage.getItem("username"))
   );
+  const [userId, setUserId] = useState<number>(
+    Number(localStorage.getItem("userId"))
+  );
   const [token, setToken] = useState<string>(
     String(localStorage.getItem("token"))
   );
+
   const navigate = useNavigate();
 
   const fetchPosts = async (settings: FetchSettings): Promise<void> => {
     try {
-      const connection = await fetch(`/api/admin`, settings);
+      const connection = await fetch(`/api/admin/${userId}`, settings);
 
       if (connection.status === 200) {
         const blogPosts = await connection.json();
@@ -112,18 +117,13 @@ const Admin: React.FC = (): React.ReactElement => {
     id?: number
   ): Promise<void> => {
     let settings: FetchSettings = {
-      method: method || "GET",
+      method: "GET",
       headers: {
+        "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,
       },
     };
 
-    settings = {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
-    };
     fetchPosts(settings);
   };
   const handleOpenSignIn = () => {
@@ -137,6 +137,11 @@ const Admin: React.FC = (): React.ReactElement => {
   const handleOpenEditor = (blogPost: BlogPost) => {
     setSelectedBlogPost(blogPost);
     setOpenEditor(true);
+  };
+  const handleCloseEditor = () => {
+    setSelectedBlogPost(undefined);
+    setOpenEditor(false);
+    apiCall();
   };
 
   const handleSignOut = async () => {
@@ -189,14 +194,28 @@ const Admin: React.FC = (): React.ReactElement => {
         </Box>
       )}
       {openEditor ? (
-        <Editor selectedBlogPost={selectedBlogPost} username={username} />
+        <Editor
+          selectedBlogPost={selectedBlogPost}
+          handleCloseEditor={handleCloseEditor}
+        />
       ) : (
         <Stack>
+          <Typography variant="h5" textAlign="center">
+            Omat postaukset
+          </Typography>
           {Boolean(apiData.error) ? (
             <Alert severity="error">{apiData.error}</Alert>
           ) : apiData.fetched ? (
             <List>
               {apiData.blogPosts.map((blogPost: BlogPost, idx: number) => {
+                const timestamp = format(
+                  new Date(blogPost.timestamp),
+                  "dd.MM.yyyy' 'HH:mm"
+                );
+                const updatedAt = format(
+                  new Date(blogPost.updatedAt),
+                  "dd.MM.yyyy' 'HH:mm"
+                );
                 return (
                   <ListItem key={idx}>
                     <Card sx={{ width: "100%", padding: 5, mb: 2 }}>
@@ -207,15 +226,9 @@ const Admin: React.FC = (): React.ReactElement => {
                         {blogPost.header}
                       </Typography>
                       <Typography variant="subtitle2">
-                        {format(
-                          new Date(blogPost.timestamp),
-                          "dd.MM.yyyy' 'HH:mm"
-                        )}
-                        {blogPost.updatedAt
-                          ? `  (Muokattu ${format(
-                              new Date(blogPost.updatedAt),
-                              "dd.MM.yyyy' 'HH:mm"
-                            )})`
+                        {timestamp}
+                        {timestamp !== updatedAt
+                          ? `  (Muokattu ${updatedAt})`
                           : null}
                       </Typography>
                       <Button

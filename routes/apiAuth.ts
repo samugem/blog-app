@@ -28,7 +28,7 @@ apiAuthRouter.post(
           .digest("hex");
         if (hash === user?.password) {
           let token = jwt.sign({}, "secret");
-          res.json({ token: token });
+          res.json({ token: token, userId: user.id });
         } else {
           next(
             new CustomError(401, "Virheellinen käyttäjätunnus tai salasana")

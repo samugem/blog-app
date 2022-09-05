@@ -17,7 +17,7 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import "./App.css";
 import { useNavigate } from "react-router-dom";
 import ReactQuill from "react-quill";
@@ -45,7 +45,10 @@ interface FetchSettings {
   body?: string;
 }
 
-const Editor = ({ selectedBlogPost }: any): React.ReactElement => {
+const Editor = ({
+  selectedBlogPost,
+  handleCloseEditor,
+}: any): React.ReactElement => {
   const [apiData, setApiData] = useState<ApiData>({
     blogPosts: [],
     error: "",
@@ -55,13 +58,20 @@ const Editor = ({ selectedBlogPost }: any): React.ReactElement => {
   const [token, setToken] = useState<string>(
     String(localStorage.getItem("token"))
   );
-  const [header, setHeader] = useState<string>(selectedBlogPost.header || "");
+  const [header, setHeader] = useState<string>(selectedBlogPost?.header || "");
+  const [imgUrl, setImgUrl] = useState<string>(selectedBlogPost?.imgUrl || "");
+  const [id, setId] = useState<number>(selectedBlogPost?.id);
   const [published, setPublished] = useState<boolean>(
-    selectedBlogPost.published || false
+    selectedBlogPost?.published || false
   );
   const [content, setContent] = useState<string>(
-    selectedBlogPost.content || ""
+    selectedBlogPost?.content || ""
   );
+  const [userId, setUserId] = useState<number>(
+    Number(localStorage.getItem("userId"))
+  );
+  const [errorMsg, setErrorMsg] = useState<string>("");
+
   const navigate = useNavigate();
   const modules = {
     toolbar: [
@@ -74,9 +84,9 @@ const Editor = ({ selectedBlogPost }: any): React.ReactElement => {
         { "indent": "-1" },
         { "indent": "+1" },
       ],
-      ["link", "image", "video"],
       ["clean"],
     ],
+
     clipboard: {
       matchVisual: false,
     },
@@ -85,42 +95,86 @@ const Editor = ({ selectedBlogPost }: any): React.ReactElement => {
   const addNewBlogPost = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     if (formRef.current?.content.value) {
-      const connection = await fetch("/api/blogpost", {
+      const connection = await fetch("/api/admin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
-          user: formRef.current?.content.value,
-          header: formRef.current?.content.value,
-          content: formRef.current?.content.value,
+          authorId: userId,
+          header: header,
+          content: content,
+          published: published,
         }),
       });
 
       if (connection.status === 200) {
-        navigate("/admin");
+        handleCloseEditor();
+      } else if (connection.status === 413) {
+        setErrorMsg("Liite on liian suuri");
       }
     }
   };
+  const editBlogPost = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
+    if (formRef.current?.content.value) {
+      const connection = await fetch(`/api/admin/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          authorId: userId,
+          header: header,
+          content: content,
+          published,
+        }),
+      });
 
-  const handleDelete = () => {
-    console.log(`${selectedBlogPost.id} poistettu`);
+      if (connection.status === 200) {
+        handleCloseEditor();
+      } else if (connection.status === 413) {
+        setErrorMsg("Liite on liian suuri");
+      }
+    }
   };
+  const deleteBlogPost = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
+    if (formRef.current?.content.value) {
+      const connection = await fetch(`/api/admin/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
 
+      if (connection.status === 200) {
+        handleCloseEditor();
+      }
+    }
+  };
+  const formHandler = (e: React.FormEvent) => {
+    if (selectedBlogPost) {
+      editBlogPost(e);
+    } else {
+      addNewBlogPost(e);
+    }
+  };
   const handlePublished = () => {
     setPublished(!published);
   };
-
-  useEffect(() => {
-    console.log(selectedBlogPost);
-  }, [selectedBlogPost]);
 
   return (
     <Container sx={{ height: "100vh" }}>
       {token ? (
         <>
-          <Box component="form" onSubmit={addNewBlogPost} ref={formRef}>
+          <Box component="form" onSubmit={formHandler} ref={formRef}>
+            {Boolean(errorMsg) ? (
+              <Alert severity="error">{errorMsg}</Alert>
+            ) : null}
             <Stack spacing={1}>
               <TextField
                 id="content"
@@ -159,7 +213,7 @@ const Editor = ({ selectedBlogPost }: any): React.ReactElement => {
                   color="error"
                   variant="contained"
                   sx={{ mt: 1 }}
-                  onClick={handleDelete}
+                  onClick={deleteBlogPost}
                 >
                   Poista
                 </Button>

@@ -16,12 +16,20 @@ apiBlogPostsRouter.get(
     next: express.NextFunction
   ) => {
     try {
-      res.json(await prisma.blogPost.findMany({ where: { published: true } }));
+      res.json(
+        await prisma.blogPost.findMany({
+          where: { published: true },
+          orderBy: {
+            timestamp: "desc",
+          },
+        })
+      );
     } catch (e: any) {
       next(new CustomError());
     }
   }
 );
+
 apiBlogPostsRouter.put(
   "/like/:id",
   async (
