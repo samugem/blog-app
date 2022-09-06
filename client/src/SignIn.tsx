@@ -19,7 +19,13 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import React, { useState, useRef } from "react";
 
-const SignIn = ({ handleClose, openSignIn, setToken, setOpenSignIn }: any) => {
+const SignIn = ({
+  handleClose,
+  openSignIn,
+  setToken,
+  setOpenSignIn,
+  setUsername,
+}: any) => {
   const [errorMsg, setErrorMsg] = useState("");
   const formRef = useRef<HTMLFormElement>();
   const [showPassword, setShowPassword] = useState(false);
@@ -43,6 +49,7 @@ const SignIn = ({ handleClose, openSignIn, setToken, setOpenSignIn }: any) => {
         if (connection.status === 200) {
           let { token, userId } = await connection.json();
           setToken(token);
+          setUsername(username);
           localStorage.setItem("token", token);
           localStorage.setItem("userId", userId);
           localStorage.setItem("username", username);
@@ -111,6 +118,12 @@ const SignIn = ({ handleClose, openSignIn, setToken, setOpenSignIn }: any) => {
                 Peruuta
               </Button>
             </CardActions>
+            {/* Testitunnukset */}
+            <span>
+              Kokeile testitunnuksilla: <br />
+              Tunnus: testi, Salasana: testi
+            </span>
+            {/* Testitunnukset */}
           </CardContent>
         </Box>
       </Card>

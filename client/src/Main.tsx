@@ -47,7 +47,6 @@ const Main: React.FC = (): React.ReactElement => {
     fetched: false,
   });
   const [openSignIn, setOpenSignIn] = useState<boolean>(false);
-  const [openRegistration, setOpenRegistration] = useState<boolean>(false);
   const [username, setUsername] = useState<string>(
     String(localStorage.getItem("username"))
   );
@@ -145,7 +144,10 @@ const Main: React.FC = (): React.ReactElement => {
 
   const handleSignOut = async () => {
     setToken("");
+    setUsername("");
     localStorage.setItem("token", "");
+    localStorage.setItem("username", "");
+    localStorage.setItem("userId", "");
   };
 
   useEffect(() => {
