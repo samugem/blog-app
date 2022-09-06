@@ -193,7 +193,7 @@ const Main: React.FC<Props> = (props: Props): React.ReactElement => {
       )}
 
       <Stack>
-        {Boolean(apiData.error === "Palvelimeen ei saada yhteyttä") ? (
+        {Boolean(String(apiData.error) === "Ei blogi postauksia") ? (
           <Alert severity="info">{apiData.error}</Alert>
         ) : Boolean(apiData.error) ? (
           <Alert severity="error">{apiData.error}</Alert>

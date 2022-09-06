@@ -207,7 +207,7 @@ const Admin: React.FC<Props> = (props: Props): React.ReactElement => {
           <Typography variant="h5" textAlign="center">
             Omat postaukset
           </Typography>
-          {Boolean(apiData.error === "Palvelimeen ei saada yhteyttä") ? (
+          {Boolean(String(apiData.error) === "Ei blogi postauksia") ? (
             <Alert severity="info">{apiData.error}</Alert>
           ) : Boolean(apiData.error) ? (
             <Alert severity="error">{apiData.error}</Alert>
