@@ -13,10 +13,10 @@ model User {
   id    Int     @id @default(autoincrement())
   username String  @unique
   password  String
-  blogPosts BlogPost[]
+  blogPosts Blogpost[]
 }
 
-model BlogPost {
+model Blogpost {
   id Int @id @default(autoincrement())
   header String @db.Text
   author User @relation(fields: [authorId], references: [id])

@@ -17,7 +17,7 @@ apiBlogPostsRouter.get(
   ) => {
     try {
       res.json(
-        await prisma.blogPost.findMany({
+        await prisma.blogpost.findMany({
           where: { published: true },
           orderBy: {
             timestamp: "desc",
@@ -40,7 +40,7 @@ apiBlogPostsRouter.put(
     try {
       const { id } = req.params;
       console.log(id);
-      const updatedPost = await prisma.blogPost.update({
+      const updatedPost = await prisma.blogpost.update({
         where: { id: Number(id) },
         data: { liked: { increment: 1 } },
       });
@@ -59,7 +59,7 @@ apiBlogPostsRouter.put(
   ) => {
     try {
       const { id } = req.params;
-      const updatedPost = await prisma.blogPost.update({
+      const updatedPost = await prisma.blogpost.update({
         where: { id: Number(id) },
         data: { disliked: { increment: 1 } },
       });

@@ -17,7 +17,7 @@ apiAdminRouter.get(
     try {
       const { id } = req.params;
       res.json(
-        await prisma.blogPost.findMany({
+        await prisma.blogpost.findMany({
           where: { authorId: Number(id) },
           orderBy: {
             timestamp: "desc",
@@ -38,7 +38,7 @@ apiAdminRouter.post(
   ) => {
     try {
       res.json(
-        await prisma.blogPost.create({
+        await prisma.blogpost.create({
           data: {
             header: req.body.header,
             authorId: req.body.authorId,
@@ -64,7 +64,7 @@ apiAdminRouter.put(
   ) => {
     try {
       const { id } = req.params;
-      const updatedPost = await prisma.blogPost.update({
+      const updatedPost = await prisma.blogpost.update({
         where: { id: Number(id) },
         data: {
           header: req.body.header,
@@ -90,7 +90,7 @@ apiAdminRouter.delete(
   ) => {
     try {
       const { id } = req.params;
-      const updatedPost = await prisma.blogPost.delete({
+      const updatedPost = await prisma.blogpost.delete({
         where: { id: Number(id) },
       });
       res.json(updatedPost);
