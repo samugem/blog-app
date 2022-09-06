@@ -25,6 +25,7 @@ const SignIn = ({
   setToken,
   setOpenSignIn,
   setUsername,
+  setUserId,
 }: any) => {
   const [errorMsg, setErrorMsg] = useState("");
   const formRef = useRef<HTMLFormElement>();
@@ -49,16 +50,15 @@ const SignIn = ({
         if (connection.status === 200) {
           let { token, userId } = await connection.json();
           setToken(token);
+          setUserId(userId);
           setUsername(username);
-          localStorage.setItem("token", token);
-          localStorage.setItem("userId", userId);
-          localStorage.setItem("username", username);
+
           setOpenSignIn(false);
         } else {
           setErrorMsg("Väärä käyttäjätunnus tai salasana");
-          localStorage.setItem("token", "");
-          localStorage.setItem("username", "");
-          localStorage.setItem("userId", "");
+          setToken("");
+          setUserId(-1);
+          setUsername("");
         }
       }
     }

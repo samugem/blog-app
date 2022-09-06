@@ -17,7 +17,14 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
-import React, { useState, useContext, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useContext,
+  useEffect,
+  useRef,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import "./App.css";
 import { useNavigate } from "react-router-dom";
 import ReactQuill from "react-quill";
@@ -30,6 +37,7 @@ interface BlogPost {
   imgUrl: string;
   updatedAt: Date;
   timestamp: Date;
+  published: boolean;
   liked: number;
   disliked: number;
 }
@@ -44,32 +52,35 @@ interface FetchSettings {
   headers?: any;
   body?: string;
 }
+interface Props {
+  token: string;
+  username: string;
+  userId: number;
+  selectedBlogPost: any;
+  handleCloseEditor: any;
+}
 
-const Editor = ({
-  selectedBlogPost,
-  handleCloseEditor,
-}: any): React.ReactElement => {
+const Editor: React.FC<Props> = (props: Props): React.ReactElement => {
   const [apiData, setApiData] = useState<ApiData>({
     blogPosts: [],
     error: "",
     fetched: false,
   });
   const formRef = useRef<HTMLFormElement>();
-  const [token, setToken] = useState<string>(
-    String(localStorage.getItem("token"))
+  const [header, setHeader] = useState<string>(
+    props.selectedBlogPost?.header || ""
   );
-  const [header, setHeader] = useState<string>(selectedBlogPost?.header || "");
-  const [imgUrl, setImgUrl] = useState<string>(selectedBlogPost?.imgUrl || "");
-  const [id, setId] = useState<number>(selectedBlogPost?.id);
+  const [imgUrl, setImgUrl] = useState<string>(
+    props.selectedBlogPost?.imgUrl || ""
+  );
+  const [id, setId] = useState<number>(props.selectedBlogPost?.id);
   const [published, setPublished] = useState<boolean>(
-    selectedBlogPost?.published || false
+    props.selectedBlogPost?.published || false
   );
   const [content, setContent] = useState<string>(
-    selectedBlogPost?.content || ""
+    props.selectedBlogPost?.content || ""
   );
-  const [userId, setUserId] = useState<number>(
-    Number(localStorage.getItem("userId"))
-  );
+
   const [errorMsg, setErrorMsg] = useState<string>("");
 
   const navigate = useNavigate();
@@ -99,10 +110,10 @@ const Editor = ({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${props.token}`,
         },
         body: JSON.stringify({
-          authorId: userId,
+          authorId: props.userId,
           header: header,
           content: content,
           published: published,
@@ -110,7 +121,7 @@ const Editor = ({
       });
 
       if (connection.status === 200) {
-        handleCloseEditor();
+        props.handleCloseEditor();
       } else if (connection.status === 413) {
         setErrorMsg("Liite on liian suuri");
       }
@@ -123,10 +134,10 @@ const Editor = ({
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${props.token}`,
         },
         body: JSON.stringify({
-          authorId: userId,
+          authorId: props.userId,
           header: header,
           content: content,
           published,
@@ -134,7 +145,7 @@ const Editor = ({
       });
 
       if (connection.status === 200) {
-        handleCloseEditor();
+        props.handleCloseEditor();
       } else if (connection.status === 413) {
         setErrorMsg("Liite on liian suuri");
       }
@@ -147,17 +158,17 @@ const Editor = ({
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${props.token}`,
         },
       });
 
       if (connection.status === 200) {
-        handleCloseEditor();
+        props.handleCloseEditor();
       }
     }
   };
   const formHandler = (e: React.FormEvent) => {
-    if (selectedBlogPost) {
+    if (props.selectedBlogPost) {
       editBlogPost(e);
     } else {
       addNewBlogPost(e);
@@ -169,7 +180,7 @@ const Editor = ({
 
   return (
     <Container sx={{ height: "100vh" }}>
-      {token ? (
+      {props.token ? (
         <>
           <Box component="form" onSubmit={formHandler} ref={formRef}>
             {Boolean(errorMsg) ? (

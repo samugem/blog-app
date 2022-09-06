@@ -13,7 +13,7 @@ import ThumbUpIcon from "@mui/icons-material/ThumbUpOffAltOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDownOffAltOutlined";
 import SignIn from "./SignIn";
 import Editor from "./Editor";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, SetStateAction, Dispatch } from "react";
 import { format } from "date-fns";
 import "./App.css";
 import { useNavigate } from "react-router-dom";
@@ -40,8 +40,16 @@ interface FetchSettings {
   headers?: any;
   body?: string;
 }
+interface Props {
+  token: string;
+  setToken: Dispatch<SetStateAction<string>>;
+  username: string;
+  setUsername: Dispatch<SetStateAction<string>>;
+  userId: number;
+  setUserId: Dispatch<SetStateAction<number>>;
+}
 
-const Admin: React.FC = (): React.ReactElement => {
+const Admin: React.FC<Props> = (props: Props): React.ReactElement => {
   const [apiData, setApiData] = useState<ApiData>({
     blogPosts: [],
     error: "",
@@ -51,21 +59,12 @@ const Admin: React.FC = (): React.ReactElement => {
   const [openSignIn, setOpenSignIn] = useState<boolean>(false);
   const [openEditor, setOpenEditor] = useState<boolean>(false);
   const [selectedBlogPost, setSelectedBlogPost] = useState<BlogPost>();
-  const [username, setUsername] = useState<string>(
-    String(localStorage.getItem("username"))
-  );
-  const [userId, setUserId] = useState<number>(
-    Number(localStorage.getItem("userId"))
-  );
-  const [token, setToken] = useState<string>(
-    String(localStorage.getItem("token"))
-  );
 
   const navigate = useNavigate();
 
   const fetchPosts = async (settings: FetchSettings): Promise<void> => {
     try {
-      const connection = await fetch(`/api/admin/${userId}`, settings);
+      const connection = await fetch(`/api/admin/${props.userId}`, settings);
 
       if (connection.status === 200) {
         const blogPosts = await connection.json();
@@ -120,7 +119,7 @@ const Admin: React.FC = (): React.ReactElement => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        "Authorization": `Bearer ${props.token}`,
       },
     };
 
@@ -145,8 +144,9 @@ const Admin: React.FC = (): React.ReactElement => {
   };
 
   const handleSignOut = async () => {
-    setToken("");
-    localStorage.setItem("token", "");
+    props.setToken("");
+    props.setUserId(-1);
+    props.setUsername("");
     navigate("/");
   };
   useEffect(() => {
@@ -161,12 +161,13 @@ const Admin: React.FC = (): React.ReactElement => {
       <SignIn
         openSignIn={openSignIn}
         handleClose={handleCloseSignIn}
-        setToken={setToken}
-        setUsername={setUsername}
+        setToken={props.setToken}
+        setUsername={props.setUsername}
+        setUserId={props.setUserId}
         setOpenSignIn={setOpenSignIn}
       />
 
-      {token ? (
+      {props.token ? (
         <Box
           sx={{
             padding: 1,
@@ -180,7 +181,7 @@ const Admin: React.FC = (): React.ReactElement => {
             <Button onClick={() => navigate("/")}>Etusivu</Button>
           )}
           <Button onClick={() => handleSignOut()}>Kirjaudu ulos</Button>{" "}
-          <Typography variant="h5">{username}</Typography>
+          <Typography variant="h5">{props.username}</Typography>
         </Box>
       ) : (
         <Box
@@ -197,6 +198,9 @@ const Admin: React.FC = (): React.ReactElement => {
         <Editor
           selectedBlogPost={selectedBlogPost}
           handleCloseEditor={handleCloseEditor}
+          userId={props.userId}
+          username={props.username}
+          token={props.token}
         />
       ) : (
         <Stack>

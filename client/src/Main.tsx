@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import ThumbUpIcon from "@mui/icons-material/ThumbUpOffAltOutlined";
 import ThumbDownIcon from "@mui/icons-material/ThumbDownOffAltOutlined";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { format } from "date-fns";
 import "./App.css";
 import SignIn from "./SignIn";
@@ -39,20 +39,23 @@ interface FetchSettings {
   headers?: any;
   body?: string;
 }
+interface Props {
+  token: string;
+  setToken: Dispatch<SetStateAction<string>>;
+  username: string;
+  setUsername: Dispatch<SetStateAction<string>>;
+  userId: number;
+  setUserId: Dispatch<SetStateAction<number>>;
+}
 
-const Main: React.FC = (): React.ReactElement => {
+const Main: React.FC<Props> = (props: Props): React.ReactElement => {
   const [apiData, setApiData] = useState<ApiData>({
     blogPosts: [],
     error: "",
     fetched: false,
   });
   const [openSignIn, setOpenSignIn] = useState<boolean>(false);
-  const [username, setUsername] = useState<string>(
-    String(localStorage.getItem("username"))
-  );
-  const [token, setToken] = useState<string>(
-    String(localStorage.getItem("token"))
-  );
+
   const navigate = useNavigate();
 
   const fetchPosts = async (settings: FetchSettings): Promise<void> => {
@@ -143,11 +146,9 @@ const Main: React.FC = (): React.ReactElement => {
   };
 
   const handleSignOut = async () => {
-    setToken("");
-    setUsername("");
-    localStorage.setItem("token", "");
-    localStorage.setItem("username", "");
-    localStorage.setItem("userId", "");
+    props.setToken("");
+    props.setUserId(-1);
+    props.setUsername("");
   };
 
   useEffect(() => {
@@ -162,12 +163,13 @@ const Main: React.FC = (): React.ReactElement => {
       <SignIn
         openSignIn={openSignIn}
         handleClose={handleCloseSignIn}
-        setToken={setToken}
-        setUsername={setUsername}
+        setToken={props.setToken}
+        setUsername={props.setUsername}
+        setUserId={props.setUserId}
         setOpenSignIn={setOpenSignIn}
       />
 
-      {token ? (
+      {props.token ? (
         <Box
           sx={{
             padding: 1,
@@ -177,7 +179,7 @@ const Main: React.FC = (): React.ReactElement => {
         >
           <Button onClick={() => navigate("/admin")}>Hallintapaneeli</Button>
           <Button onClick={() => handleSignOut()}>Kirjaudu ulos</Button>{" "}
-          <Typography variant="h5">{username}</Typography>
+          <Typography variant="h5">{props.username}</Typography>
         </Box>
       ) : (
         <Box
