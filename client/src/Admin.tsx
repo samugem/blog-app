@@ -259,15 +259,15 @@ const Admin: React.FC = (): React.ReactElement => {
                   </ListItem>
                 );
               })}
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={() => setOpenEditor(true)}
-              >
-                Luo uusi
-              </Button>
             </List>
-          ) : null}
+          ) : null}{" "}
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={() => setOpenEditor(true)}
+          >
+            Luo uusi
+          </Button>
         </Stack>
       )}
     </Container>
