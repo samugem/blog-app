@@ -154,7 +154,6 @@ const Main: React.FC<Props> = (props: Props): React.ReactElement => {
   useEffect(() => {
     apiCall();
   }, []);
-
   return (
     <Container>
       <Typography variant="h4" textAlign="center">
@@ -194,7 +193,9 @@ const Main: React.FC<Props> = (props: Props): React.ReactElement => {
       )}
 
       <Stack>
-        {Boolean(apiData.error) ? (
+        {Boolean(apiData.error === "Palvelimeen ei saada yhteyttä") ? (
+          <Alert severity="info">{apiData.error}</Alert>
+        ) : Boolean(apiData.error) ? (
           <Alert severity="error">{apiData.error}</Alert>
         ) : apiData.fetched ? (
           <List>
