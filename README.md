@@ -1,4 +1,7 @@
-# blog-app
+# Blog app
+
+NodeJS backend and React frontend
+
 
 ![image](https://user-images.githubusercontent.com/70442725/188647334-c98715d1-55de-40eb-980f-c9b14dddda2a.png)
 
